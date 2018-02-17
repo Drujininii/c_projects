@@ -1,0 +1,3 @@
+/home/ed_grolsh/ClionProjects/T.P.first_sem/C++3/build/CMakeFiles/edit_cache.dir
+/home/ed_grolsh/ClionProjects/T.P.first_sem/C++3/build/CMakeFiles/rebuild_cache.dir
+/home/ed_grolsh/ClionProjects/T.P.first_sem/C++3/build/CMakeFiles/C__3.dir

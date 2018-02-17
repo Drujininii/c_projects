@@ -1,0 +1,188 @@
+#include <iostream>
+#include <cassert>
+
+static int max_save_number = 1;
+
+template <class T>
+class My_vector {
+public:
+    My_vector();
+    My_vector(size_t);
+    My_vector(const My_vector &); //copy constructor
+    ~My_vector();
+
+    void push_back(T);
+    T pop(size_t);
+    void delete_element(size_t);
+
+    size_t vector_size();
+
+    T *operator*();
+    template <class k> friend std::istream &operator>>(std::istream &, My_vector<k> &);
+
+    My_vector & operator=(My_vector &);
+    T operator[](size_t);
+private:
+    void resize();
+    size_t size;
+    size_t capacity;
+    T *array;
+};
+
+
+template <class T>
+My_vector<T>::My_vector() {
+    size = 0;
+    capacity = 1024;
+    try {
+        array = new T[capacity];//олтловить исключение
+    }
+    catch(std::bad_alloc) {
+        throw 1;
+    }
+}
+
+template <class T>
+My_vector<T>::My_vector(size_t known_size) {
+    size = 0;
+    capacity = known_size;
+    try {
+        array = new T[capacity];
+    }
+    catch(std::bad_alloc) {
+        throw 1;
+    }
+}
+
+template <class T>
+My_vector<T>::My_vector(const My_vector &another) {
+    size = another.size;
+    capacity = another.capacity;
+    try {
+        array = new T(capacity);//отловить исключение
+    }
+    catch(std::bad_alloc) {
+        throw 1;
+    }
+    for(size_t i = 0; i < size; i++)
+        *(array + i) = *(another.array + i);
+}
+
+template <class T>
+My_vector<T>::~My_vector() {
+    delete[] array;
+}
+
+template <class T>
+void My_vector<T>::push_back(T new_element) {
+    if(size == capacity)
+        resize();
+    *(array + size) = new_element;
+    size++;
+}
+
+template <class T>
+T My_vector<T>::pop(size_t number_element) {
+    assert(number_element < size);
+    return *(array + number_element);
+}
+
+template <class T>
+size_t My_vector<T>::vector_size() {
+    return size;
+}
+
+template <class T>
+void My_vector<T>::resize() {
+    capacity *= 2;
+    T *temp;
+    try {
+        temp = new T[capacity];//отловить исключение
+    }
+    catch(std::bad_alloc) {
+        throw 1;
+    }
+    for (size_t i = 0; i < size; i++) {
+        *(temp + i) = *(array + i);
+    }
+    delete[] array;
+    array = temp;
+}
+
+template <class T>
+T My_vector<T>::operator[](size_t number_element) {
+    assert(number_element < size);
+    return *(array + number_element);
+}
+
+template <class T>
+My_vector<T> &My_vector<T>::operator=(My_vector &vector) {
+    if(this != &vector) {
+        size = vector.size;
+        capacity = vector.capacity;
+        delete[] array;
+        try {
+            array = new T[capacity];
+        }
+        catch(std::bad_alloc) {
+            throw 1;
+        }
+        for (size_t i = 0; i < size; ++i) {
+            *(array + size) = *(vector.array + size);
+        }
+    }
+    return *this;
+}
+
+template <class T>
+void My_vector<T>::delete_element(size_t number_to_delete) {//удаляет элемент по номеру. нумерация с нуля до size - 1
+    assert(number_to_delete < size);
+    for(size_t i = 0; i < (size - number_to_delete - 1); i++) {//можно обойтись одной переменной, но потеряется смысл
+        *(array + number_to_delete + i) = *(array + number_to_delete + i + 1);
+    }
+    size--;
+}
+
+
+
+unsigned long long int count_pyramide(int number_of_cube, int size_of_base,  unsigned long long int **);
+
+inline unsigned long long int count_pyramide(int number_of_cube, int size_of_base, unsigned long long int **vector_particial_sum) {
+    if (number_of_cube == 1)
+        return 1;
+    if (number_of_cube == 0)
+        return 0;
+    if (size_of_base == 1)
+        return 1;
+    if (number_of_cube < size_of_base)
+        return count_pyramide(number_of_cube, number_of_cube, vector_particial_sum);
+    if (number_of_cube == size_of_base) {
+        if (vector_particial_sum[number_of_cube - 1][size_of_base - 1] == 0)
+            return vector_particial_sum[number_of_cube - 1][size_of_base - 1] =
+                       count_pyramide(number_of_cube, number_of_cube - 1, vector_particial_sum) + 1;
+        return vector_particial_sum[number_of_cube - 1][size_of_base - 1];
+    }
+    if (vector_particial_sum[number_of_cube - 1][size_of_base - 1] == 0)
+    return vector_particial_sum[number_of_cube - 1][size_of_base - 1] =
+                   count_pyramide(number_of_cube - size_of_base, size_of_base, vector_particial_sum) +
+            count_pyramide(number_of_cube, size_of_base - 1, vector_particial_sum);
+    return vector_particial_sum[number_of_cube - 1][size_of_base - 1];
+}
+
+
+int main(){
+    int number_of_cube;
+    std::cin >> number_of_cube;
+    unsigned long long int **vector_particial_sum = new unsigned long long int *[number_of_cube];
+    for (size_t i = 0; i < number_of_cube; i++) {
+        *(vector_particial_sum + i) = new unsigned long long int [number_of_cube];
+        for (size_t k = 0; k < number_of_cube; k++)
+            vector_particial_sum[i][k] = 0;
+    }
+
+    std::cout << count_pyramide(number_of_cube, number_of_cube, vector_particial_sum);
+    for (int j = 0; j < number_of_cube; ++j) {
+        delete [] vector_particial_sum[j];
+    }
+    return 0;
+}

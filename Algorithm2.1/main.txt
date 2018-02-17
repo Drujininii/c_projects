@@ -1,0 +1,122 @@
+#include <iostream>
+#include <vector>
+#include <gmpxx.h>
+#include <algorithm>
+#include <utility>
+
+template <typename T>
+void kostil_sort(T *array, size_t number_of_elem, bool (comparator(size_t, size_t))) {
+    for (size_t i = 1; i < number_of_elem; i++) {
+        if (comparator(i, i - 1))
+            continue;
+        size_t j = i;
+        while ((!comparator(j , j - 1)) && (j != 0)) {
+            std::swap(*(array + j), *(array + j - 1));
+            j--;
+        }
+    }
+}
+
+struct Point {
+    int x_coord;
+    int y_coord;
+    bool operator > (const Point &) const ;
+    bool operator == (const Point &) const;
+    bool operator < (const Point &) const;
+    friend std::ostream & operator << (std::ostream &os, const Point &obj);
+};
+
+bool Point::operator > (const Point &another) const {
+    if (this->x_coord > another.x_coord)
+        return true;
+    else if ((this->x_coord == another.x_coord) && (this->y_coord > another.y_coord))
+        return true;
+    return false;
+}
+
+bool Point::operator == (const Point &another) const {
+    if ((this->x_coord == another.x_coord) && (this->y_coord == another.y_coord))
+        return true;
+    return false;
+}
+
+bool Point::operator<(const Point &another) const {
+    if (this->x_coord < another.x_coord)
+        return true;
+    else if ((this->x_coord == another.x_coord) && (this->y_coord < another.y_coord))
+        return true;
+    return false;
+}
+
+std::ostream &operator<<(std::ostream &os, const Point &obj) {
+    os << obj.x_coord << " " << obj.y_coord << std::endl;
+    return os;
+}
+
+class Field {
+public:
+    Field() = delete;
+    Field(std::vector<Point> &);
+    void sort_field();
+    friend std::ostream & operator << (std::ostream &os, Field &obj);
+    bool comparator(size_t, size_t);
+private:
+    void find_first();
+    double tang(size_t);//находит тангенс угла между осью y и лучом на точку
+    std::vector<Point> field;
+};
+
+void Field::find_first() {
+    std::vector<Point>::iterator current_element = field.begin() + 1;
+    for (size_t i = 0; i < field.size(); current_element++) {
+        if (field.begin() > current_element)
+            std::iter_swap(field.begin(), current_element);
+    }
+}
+
+Field::Field(std::vector<Point> &vector) {
+    field = vector;
+    find_first();
+}
+
+
+
+std::ostream &operator<<(std::ostream &os, Field &obj) {
+    std::vector<Point>::iterator current_element = (obj.field.begin());
+    while (current_element != obj.field.end()) {
+        os << *current_element;
+        current_element++;
+    }
+    return os;
+}
+
+bool Field::comparator(size_t idx1, size_t idx2) {
+    if (tang(idx2) < tang(idx1))
+        return true;
+    return false;
+}
+
+double Field::tang(size_t number) {
+    double tg = (field[number].y_coord - field[0].y_coord)/(field[number].x_coord - field[0].x_coord);
+    return tg;
+}
+
+void Field::sort_field() {
+    kostil_sort(&field[0], field.size(), this->comparator);
+}
+
+int main() {
+    std::vector<Point> vect_point;
+    Point pt;
+    while(!std::cin.eof()) {
+        std::cin >> pt.x_coord;
+        std::cin >> pt.y_coord;
+        vect_point.push_back(pt);
+    }
+    Field obj(vect_point);
+    obj.sort_field();
+    std::cout << obj << std::endl;
+    std::cout << "Hello, World!" << std::endl;
+    return 0;
+}
+
